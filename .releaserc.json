@@ -2,6 +2,11 @@
   "branches": [
     {
       "name": "main"
+    },
+    {
+      "name": "PLT-[0-9]{3,4}",
+      "prerelease": true,
+      "channel": "unstable"
     }
   ],
   "plugins": [
