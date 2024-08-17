@@ -14,6 +14,7 @@ if appropriate. All modules should have a short description.
 """
 
 import dagger
+import json
 from datetime import datetime
 from dagger import dag, function, object_type, Doc
 from typing import Annotated
@@ -38,6 +39,7 @@ def construct_cmd(check_if_ci: bool, dry_run: bool):
 @object_type
 class SemRel:
     config: dagger.File | None = None
+    modified_config: str | None = None
 
     @function
     async def with_config(
@@ -51,10 +53,14 @@ class SemRel:
         ] = None,
     ) -> "SemRel":
         """Modify the Semantic Release config file (.releaserc.json) for testing purposes."""
-        if branch:
-            print(f"Adding {branch.strip()} to ")
+        config = json.loads(await file.contents())
 
-        self.config = file
+        if branch:
+            print(f"Adding branch '{branch.strip()}' to .releaserc.json temporarily.")
+            if "branches" in config:
+                config["branches"].append({"name": branch.strip()})
+
+        self.modified_config = json.dumps(config)
         return self
 
     @function
@@ -72,12 +78,18 @@ class SemRel:
         cmd = construct_cmd(check_if_ci, dry_run)
         print(f"Executing Semantic Release with command:\n{cmd}")
 
-        return (
+        ctr = (
             dag.container()
             .from_("hoppr/semantic-release")
             .with_env_variable("TIME", datetime.now().strftime("%H%M%S"))
             .with_secret_variable(env_var_key, token)
             .with_directory("/src", dir)
             .with_workdir("/src")
-            .with_exec(cmd)
         )
+
+        if self.modified_config is not None:
+            ctr = ctr.without_file(".releaserc.json").with_new_file(
+                ".releaserc.json", self.modified_config
+            )
+
+        return ctr.with_exec(cmd)
