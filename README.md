@@ -17,5 +17,3 @@
 ### Export the .releaserc.json file used:
 
 `dagger -i call with-config --file .releaserc.json release --dir . --token env:GH_TOKEN --provider "github" file --path ".releaserc.json" export --path "out.json"`
-
-
