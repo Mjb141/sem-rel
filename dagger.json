@@ -1,6 +1,13 @@
 {
   "name": "sem-rel",
-  "sdk": "python",
-  "source": ".",
-  "engineVersion": "v0.12.3"
+  "engineVersion": "v0.14.0",
+  "sdk": "go",
+  "dependencies": [
+    {
+      "name": "git-info",
+      "source": "github.com/vbehar/daggerverse/git-info@v0.10.2",
+      "pin": "96867f0a21c7b5ac18b9788c1c2332ed0a3ff63f"
+    }
+  ],
+  "source": "."
 }
