@@ -1,19 +1,21 @@
 ## Testing
 
-### Run Semantic Release:
+### Run Semantic Release with defaults:
 
-`dagger -i call with-config --file .releaserc.json release --dir . --token env:GH_TOKEN --provider "github" stdout`
+`dagger call release --token env:GH_TOKEN stdout`
 
 ### Run Semantic Release on a non-configured branch:
 
 **Note:** Branch must exist on remote source. Local-only branches will return "This test run was triggered on the branch <name>, while semantic-release is configured to only publish from main."
 
-`dagger -i call with-config --file .releaserc.json --branch "test" release --dir . --token env:GH_TOKEN --provider "github" stdout`
+`dagger call configure --add-current-branch release --token env:GH_TOKEN stdout`
 
-### Print the .releaserc.json file used:
+### Print the .releaserc.json file used (uses `jq` to pretty print JSON):
 
-`dagger -i call with-config --file .releaserc.json release --dir . --token env:GH_TOKEN --provider "github" with-exec --args "cat,.releaserc.json" stdout`
+`dagger call configure --add-current-branch release --token env:GH_TOKEN file --path ".releaserc.json" contents | jq`
 
 ### Export the .releaserc.json file used:
 
-`dagger -i call with-config --file .releaserc.json release --dir . --token env:GH_TOKEN --provider "github" file --path ".releaserc.json" export --path "out.json"`
+`dagger call configure --add-current-branch release --token env:GH_TOKEN file --path ".releaserc.json" export --path ".releaserc.json.modified"`
+
+`cat .releaserc.json.modified | jq`
