@@ -1,16 +1,10 @@
-// A generated module for SemRel functions
+// Configurable Semantic Release
 //
-// This module has been generated via dagger init and serves as a reference to
-// basic module structure as you get started with Dagger.
+// Configurable Semantic Release module. Options are provided to modify your
+// releaserc file on demand for testing purposes (e.g. local/dry/no-ci runs,
+// unlisted branches etc).
 //
-// Two functions have been pre-created. You can modify, delete, or add to them,
-// as needed. They demonstrate usage of arguments and return types using simple
-// echo and grep commands. The functions can be called from the dagger CLI or
-// from one of the SDKs.
-//
-// The first line in this comment block is a short description line and the
-// rest is a long description with more detail on the module's purpose or usage,
-// if appropriate. All modules should have a short description.
+// Usable with Github or Gitlab with a PAT token.
 
 package main
 
@@ -19,9 +13,8 @@ import (
 	"dagger/sem-rel/internal/dagger"
 	"encoding/json"
 	"fmt"
-	"log"
+	"github.com/rs/zerolog/log"
 	"slices"
-	"strings"
 	"time"
 )
 
@@ -45,19 +38,28 @@ type Config struct {
 	Plugins  interface{} `json:"plugins"`
 }
 
-// Returns a container that echoes whatever string argument is provided
-func (m *SemRel) ContainerEcho(stringArg string) *dagger.Container {
-	return dag.Container().From("alpine:latest").WithExec([]string{"echo", stringArg})
-}
+func (m *SemRel) AddBranchToReleaseRc(ctx context.Context, dir *dagger.Directory, branches []Branch) ([]Branch, error) {
+	currentBranch, err := dag.GitInfo(dir).Branch(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Could not get the current branch name")
+		return branches, err
+	}
 
-// Returns lines that match a pattern in the files of the provided Directory
-func (m *SemRel) GrepDir(ctx context.Context, directoryArg *dagger.Directory, pattern string) (string, error) {
-	return dag.Container().
-		From("alpine:latest").
-		WithMountedDirectory("/mnt", directoryArg).
-		WithWorkdir("/mnt").
-		WithExec([]string{"grep", "-R", pattern, "."}).
-		Stdout(ctx)
+	var branchNamesInReleaseRc []string
+	for _, branch := range branches {
+		log.Info().Str("Branch", branch.Name).Msg("Branch found")
+		branchNamesInReleaseRc = append(branchNamesInReleaseRc, branch.Name)
+	}
+
+	currentBranchInReleaseBranches := slices.Contains(branchNamesInReleaseRc, currentBranch)
+
+	if currentBranchInReleaseBranches {
+		log.Info().Msg(fmt.Sprintf("Branch %s already found in config.Branches", currentBranch))
+		return branches, nil
+	}
+
+	log.Info().Msg(fmt.Sprintf("Adding branch %s to config.Branches", currentBranch))
+	return append(branches, Branch{currentBranch, false, ""}), nil
 }
 
 func (m *SemRel) Release(
@@ -68,6 +70,8 @@ func (m *SemRel) Release(
 	dir *dagger.Directory,
 	// +default="Github"
 	provider string,
+	// +default=false
+	addCurrentBranch bool,
 	token *dagger.Secret,
 ) (*dagger.Container, error) {
 	var tokenKey string
@@ -79,32 +83,27 @@ func (m *SemRel) Release(
 
 	rules, err := releaserc.Contents(ctx)
 	if err != nil {
-		log.Panic("Failed to read .releaserc.json contents", err)
+		log.Error().Err(err).Msg("Failed to read .releaserc.json contents")
 	}
 
 	var config Config
 	if err := json.Unmarshal([]byte(rules), &config); err != nil {
-		log.Panic("Failed to Unmarshal .releaserc.json", err)
+		log.Error().Err(err).Msg("Failed to Unmarshal .releaserc.json")
 	}
 
-	currentBranch, err := dag.GitInfo(dir).Branch(ctx)
-	if err != nil {
-		log.Panic("Could not get the current branch name", err)
-	}
+	if addCurrentBranch {
+		log.Debug().Bool("addCurrentBranch", addCurrentBranch).Msg("Attempting to add %s to config.Branches")
+		branches, err := m.AddBranchToReleaseRc(ctx, dir, config.Branches)
+		if err != nil {
+			return nil, err
+		}
 
-	var branchNamesInReleaseRc []string
-	for _, branch := range config.Branches {
-		fmt.Println(fmt.Sprintf("Branch found: %s", branch.Name))
-		branchNamesInReleaseRc = append(branchNamesInReleaseRc, branch.Name)
-	}
-
-	currentBranchInReleaseBranches := slices.Contains(branchNamesInReleaseRc, currentBranch)
-	if !currentBranchInReleaseBranches {
-		config.Branches = append(config.Branches, Branch{currentBranch, false, ""})
+		config.Branches = branches
 	}
 
 	updatedConfig, err := json.Marshal(config)
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to recreate .releaserc.json from config")
 		return nil, err
 	}
 
@@ -112,9 +111,6 @@ func (m *SemRel) Release(
 	ctr := dag.Container().
 		From("hoppr/semantic-release").
 		WithEnvVariable("BUST_CACHE", currentTime).
-		WithEnvVariable("BRANCH_NAME", currentBranch).
-		WithEnvVariable("BRANCHES_IN_RELEASERC", strings.Join(branchNamesInReleaseRc, ", ")).
-		WithEnvVariable("CURRENT_BRANCH_IN_RELEASERC", fmt.Sprint(currentBranchInReleaseBranches)).
 		WithSecretVariable(tokenKey, token).
 		WithDirectory("/src", dir).
 		WithWorkdir("/src").
