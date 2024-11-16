@@ -40,11 +40,11 @@ func RemoveGitProvider(ctx context.Context, dir *dagger.Directory, plugins []int
 		pluginType := reflect.TypeOf(plugin)
 		switch pluginType.Kind() {
 		case reflect.String:
-			log.Debug().Str("string", fmt.Sprintf("%s", plugin))
+			log.Debug().Str("string", fmt.Sprintf("%s", plugin)).Msg("Plugins")
 		case reflect.Array:
-			log.Debug().Str("array", fmt.Sprintf("%s", plugin))
+			log.Debug().Str("array", fmt.Sprintf("%s", plugin)).Msg("Plugins")
 		default:
-			log.Debug().Str("other", fmt.Sprintf("%s", plugin))
+			log.Debug().Str("other", fmt.Sprintf("%s", plugin)).Msg("Plugins")
 		}
 	}
 

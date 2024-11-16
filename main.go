@@ -106,7 +106,7 @@ func (m *SemRel) Release(
 		log.Error().Err(err).Msg("Failed to Unmarshal .releaserc.json")
 	}
 
-	log.Debug().Bool("add-current-branch", m.AddCurrentBranch)
+	log.Debug().Bool("add-current-branch", m.AddCurrentBranch).Msg("Configuration")
 	// Modify configuration if required
 	if m.AddCurrentBranch {
 		log.
@@ -122,7 +122,7 @@ func (m *SemRel) Release(
 		config.Branches = branches
 	}
 
-	log.Debug().Bool("remove-git-provider", m.removeGitProvider)
+	log.Debug().Bool("remove-git-provider", m.removeGitProvider).Msg("Configuration")
 	if m.removeGitProvider {
 		log.
 			Debug().
