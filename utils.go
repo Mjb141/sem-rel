@@ -49,8 +49,8 @@ func AddBranchToReleaseRc(ctx context.Context, dir *dagger.Directory, branches [
 	return append(branches, Branch{currentBranch, "", false}), nil
 }
 
-func RemoveGitProvider(ctx context.Context, dir *dagger.Directory, plugins []interface{}) {
-	for _, plugin := range plugins {
+func RemoveGitProvider(ctx context.Context, dir *dagger.Directory, plugins []interface{}) []interface{} {
+	for pluginIndex, plugin := range plugins {
 		pluginType := reflect.TypeOf(plugin)
 		switch pluginType.Kind() {
 		case reflect.String:
@@ -58,6 +58,21 @@ func RemoveGitProvider(ctx context.Context, dir *dagger.Directory, plugins []int
 				Debug().
 				Str("string", fmt.Sprintf("%s", plugin)).
 				Msg("Plugins")
+
+			if plugin.(string) == "@semantic-release/github" || plugin.(string) == "@semantic-release/gitlab" {
+				log.
+					Debug().
+					Msg(fmt.Sprintf("Removing pluginIndex %d (%s) from plugins", pluginIndex, plugin))
+
+				plugins = slices.Delete(plugins, pluginIndex, pluginIndex+1)
+
+				log.
+					Debug().
+					Str("array", fmt.Sprintf("%s", plugins)).
+					Msg("Plugins")
+
+				return plugins
+			}
 
 		case reflect.Array:
 			log.
@@ -73,6 +88,7 @@ func RemoveGitProvider(ctx context.Context, dir *dagger.Directory, plugins []int
 		}
 	}
 
+	return plugins
 }
 
 func SemanticReleaseCommand(ctx context.Context, dryRun, checkIfCi bool) []string {

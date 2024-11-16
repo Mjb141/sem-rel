@@ -102,6 +102,8 @@ func (m *SemRel) Release(
 			Error().
 			Err(err).
 			Msg("Failed to read .releaserc.json contents")
+
+		return nil, err
 	}
 
 	var config Config
@@ -110,6 +112,8 @@ func (m *SemRel) Release(
 			Error().
 			Err(err).
 			Msg("Failed to Unmarshal .releaserc.json")
+
+		return nil, err
 	}
 
 	// Modify configuration if required
@@ -136,9 +140,9 @@ func (m *SemRel) Release(
 		log.
 			Debug().
 			Bool("removeGitProvider", m.RemoveGitProvider).
-			Msg("Attempting to remove @semantic-release/{github/gitlab} from plugins")
+			Msg("Attempting to remove @semantic-release/github or @semantic-release/gitlab from plugins")
 
-		RemoveGitProvider(ctx, dir, config.Plugins)
+		config.Plugins = RemoveGitProvider(ctx, dir, config.Plugins)
 	}
 
 	// Modify command if required
