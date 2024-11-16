@@ -4,6 +4,7 @@ import (
 	"context"
 	"dagger/sem-rel/internal/dagger"
 	"fmt"
+	"reflect"
 	"slices"
 	"strings"
 
@@ -31,22 +32,37 @@ func AddBranchToReleaseRc(ctx context.Context, dir *dagger.Directory, branches [
 	}
 
 	log.Info().Msg(fmt.Sprintf("Adding branch %s to config.Branches", currentBranch))
-	return append(branches, Branch{currentBranch, false, ""}), nil
+	return append(branches, Branch{currentBranch, "", false}), nil
+}
+
+func RemoveGitProvider(ctx context.Context, dir *dagger.Directory, plugins []interface{}) {
+	for _, plugin := range plugins {
+		pluginType := reflect.TypeOf(plugin)
+		switch pluginType.Kind() {
+		case reflect.String:
+			log.Debug().Str("string", fmt.Sprintf("%s", plugin))
+		case reflect.Array:
+			log.Debug().Str("array", fmt.Sprintf("%s", plugin))
+		default:
+			log.Debug().Str("other", fmt.Sprintf("%s", plugin))
+		}
+	}
+
 }
 
 func SemanticReleaseCommand(ctx context.Context, dryRun, checkIfCi bool) []string {
 	cmd := []string{"semantic-release"}
 
 	if dryRun {
-		log.Debug().Str("Added", "--dry-run").Msg("Added option to 'semantic-release' command")
+		log.Debug().Str("option", "--dry-run").Msg("Added option to 'semantic-release' command")
 		cmd = append(cmd, "--dry-run")
 	}
 
 	if !checkIfCi {
-		log.Debug().Str("Added", "--no-ci").Msg("Added option to 'semantic-release' command")
+		log.Debug().Str("option", "--no-ci").Msg("Added option to 'semantic-release' command")
 		cmd = append(cmd, "--no-ci")
 	}
 
-	log.Debug().Msg(fmt.Sprintf("Returning 'semantic-release' command: %s", strings.Join(cmd, " ")))
+	log.Debug().Msg(fmt.Sprintf("Returning 'semantic-release' command: '%s'", strings.Join(cmd, " ")))
 	return cmd
 }

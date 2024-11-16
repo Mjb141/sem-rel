@@ -22,6 +22,9 @@ type SemRel struct {
 	// Allow the user to add the current branch to .releaserc.json
 	// +private
 	AddCurrentBranch bool
+	// All the user to remove @semantic-release/github or @semantic-release/gitlab from plugins
+	// +private
+	removeGitProvider bool
 	// Semantic Release --dry-run option
 	// +private
 	DryRun bool
@@ -32,20 +35,20 @@ type SemRel struct {
 
 type Branch struct {
 	Name       string `json:"name"`
-	Prerelease bool   `json:"prerelease,omitempty"`
 	Channel    string `json:"channel,omitempty"`
+	Prerelease bool   `json:"prerelease,omitempty"`
 }
 
 // Plugin represents a plugin in the JSON data
 type Plugin struct {
-	Name    string            `json:"name"`
 	Options map[string]string `json:"options,omitempty"`
+	Name    string            `json:"name"`
 }
 
 // Config represents the overall JSON structure
 type Config struct {
-	Branches []Branch    `json:"branches"`
-	Plugins  interface{} `json:"plugins"`
+	Branches []Branch      `json:"branches"`
+	Plugins  []interface{} `json:"plugins"`
 }
 
 // Configure Semantic Release
@@ -54,6 +57,9 @@ func (m *SemRel) Configure(
 	// Add the current branch to the 'branches' key in your .releaserc file
 	// +default=false
 	addCurrentBranch bool,
+	// Remove the Github/Gitlab from plugins (if you do not have a token)
+	// +default=false
+	removeGitProvider bool,
 	// The Semantic Release --dry-run flag for testing
 	// +default=true
 	dryRun bool,
@@ -62,6 +68,7 @@ func (m *SemRel) Configure(
 	checkIfCi bool,
 ) *SemRel {
 	m.AddCurrentBranch = addCurrentBranch
+	m.removeGitProvider = removeGitProvider
 	m.DryRun = dryRun
 	m.CheckIfCi = checkIfCi
 	return m
@@ -101,13 +108,26 @@ func (m *SemRel) Release(
 
 	// Modify configuration if required
 	if m.AddCurrentBranch {
-		log.Debug().Bool("addCurrentBranch", m.AddCurrentBranch).Msg("Attempting to add %s to config.Branches")
+		log.
+			Debug().
+			Bool("addCurrentBranch", m.AddCurrentBranch).
+			Msg("Attempting to add %s to config.Branches")
+
 		branches, err := AddBranchToReleaseRc(ctx, dir, config.Branches)
 		if err != nil {
 			return nil, err
 		}
 
 		config.Branches = branches
+	}
+
+	if m.removeGitProvider {
+		log.
+			Debug().
+			Bool("removeGitProvider", m.removeGitProvider).
+			Msg("Attempting to remove @semantic-release/{github/gitlab} from plugins")
+
+		RemoveGitProvider(ctx, dir, config.Plugins)
 	}
 
 	// Modify command if required
