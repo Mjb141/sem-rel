@@ -24,7 +24,7 @@ type SemRel struct {
 	AddCurrentBranch bool
 	// All the user to remove @semantic-release/github or @semantic-release/gitlab from plugins
 	// +private
-	removeGitProvider bool
+	RemoveGitProvider bool
 	// Semantic Release --dry-run option
 	// +private
 	DryRun bool
@@ -68,7 +68,7 @@ func (m *SemRel) Configure(
 	checkIfCi bool,
 ) *SemRel {
 	m.AddCurrentBranch = addCurrentBranch
-	m.removeGitProvider = removeGitProvider
+	m.RemoveGitProvider = removeGitProvider
 	m.DryRun = dryRun
 	m.CheckIfCi = checkIfCi
 	return m
@@ -112,11 +112,6 @@ func (m *SemRel) Release(
 			Msg("Failed to Unmarshal .releaserc.json")
 	}
 
-	log.
-		Debug().
-		Bool("add-current-branch", m.AddCurrentBranch).
-		Msg("Configuration")
-
 	// Modify configuration if required
 	if m.AddCurrentBranch {
 		log.
@@ -137,15 +132,10 @@ func (m *SemRel) Release(
 		config.Branches = branches
 	}
 
-	log.
-		Debug().
-		Bool("remove-git-provider", m.removeGitProvider).
-		Msg("Configuration")
-
-	if m.removeGitProvider {
+	if m.RemoveGitProvider {
 		log.
 			Debug().
-			Bool("removeGitProvider", m.removeGitProvider).
+			Bool("removeGitProvider", m.RemoveGitProvider).
 			Msg("Attempting to remove @semantic-release/{github/gitlab} from plugins")
 
 		RemoveGitProvider(ctx, dir, config.Plugins)
