@@ -79,12 +79,20 @@ func SemanticReleaseCommand(ctx context.Context, dryRun, checkIfCi bool) []strin
 	cmd := []string{"semantic-release"}
 
 	if dryRun {
-		log.Debug().Str("option", "--dry-run").Msg("Added option to 'semantic-release' command")
+		log.
+			Debug().
+			Str("option", "--dry-run").
+			Msg("Added option to 'semantic-release' command")
+
 		cmd = append(cmd, "--dry-run")
 	}
 
 	if !checkIfCi {
-		log.Debug().Str("option", "--no-ci").Msg("Added option to 'semantic-release' command")
+		log.
+			Debug().
+			Str("option", "--no-ci").
+			Msg("Added option to 'semantic-release' command")
+
 		cmd = append(cmd, "--no-ci")
 	}
 
