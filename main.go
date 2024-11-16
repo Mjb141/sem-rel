@@ -98,15 +98,25 @@ func (m *SemRel) Release(
 
 	rules, err := releaserc.Contents(ctx)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to read .releaserc.json contents")
+		log.
+			Error().
+			Err(err).
+			Msg("Failed to read .releaserc.json contents")
 	}
 
 	var config Config
 	if err := json.Unmarshal([]byte(rules), &config); err != nil {
-		log.Error().Err(err).Msg("Failed to Unmarshal .releaserc.json")
+		log.
+			Error().
+			Err(err).
+			Msg("Failed to Unmarshal .releaserc.json")
 	}
 
-	log.Debug().Bool("add-current-branch", m.AddCurrentBranch).Msg("Configuration")
+	log.
+		Debug().
+		Bool("add-current-branch", m.AddCurrentBranch).
+		Msg("Configuration")
+
 	// Modify configuration if required
 	if m.AddCurrentBranch {
 		log.
@@ -116,13 +126,22 @@ func (m *SemRel) Release(
 
 		branches, err := AddBranchToReleaseRc(ctx, dir, config.Branches)
 		if err != nil {
+			log.
+				Error().
+				Err(err).
+				Msg("Failed to add branch to '.releaserc.json'")
+
 			return nil, err
 		}
 
 		config.Branches = branches
 	}
 
-	log.Debug().Bool("remove-git-provider", m.removeGitProvider).Msg("Configuration")
+	log.
+		Debug().
+		Bool("remove-git-provider", m.removeGitProvider).
+		Msg("Configuration")
+
 	if m.removeGitProvider {
 		log.
 			Debug().
@@ -137,7 +156,11 @@ func (m *SemRel) Release(
 
 	updatedConfig, err := json.Marshal(config)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to recreate .releaserc.json from config")
+		log.
+			Error().
+			Err(err).
+			Msg("Failed to recreate .releaserc.json from config")
+
 		return nil, err
 	}
 

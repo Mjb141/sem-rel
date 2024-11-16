@@ -14,24 +14,38 @@ import (
 func AddBranchToReleaseRc(ctx context.Context, dir *dagger.Directory, branches []Branch) ([]Branch, error) {
 	currentBranch, err := dag.GitInfo(dir).Branch(ctx)
 	if err != nil {
-		log.Error().Err(err).Msg("Could not get the current branch name")
+		log.
+			Error().
+			Err(err).
+			Msg("Could not get the current branch name")
+
 		return branches, err
 	}
 
 	var branchNamesInReleaseRc []string
 	for _, branch := range branches {
-		log.Info().Str("Branch", branch.Name).Msg("Branch found")
+		log.
+			Info().
+			Str("Branch", branch.Name).
+			Msg("Branch found")
+
 		branchNamesInReleaseRc = append(branchNamesInReleaseRc, branch.Name)
 	}
 
 	currentBranchInReleaseBranches := slices.Contains(branchNamesInReleaseRc, currentBranch)
 
 	if currentBranchInReleaseBranches {
-		log.Info().Msg(fmt.Sprintf("Branch %s already found in config.Branches", currentBranch))
+		log.
+			Info().
+			Msg(fmt.Sprintf("Branch %s already found in config.Branches", currentBranch))
+
 		return branches, nil
 	}
 
-	log.Info().Msg(fmt.Sprintf("Adding branch %s to config.Branches", currentBranch))
+	log.
+		Info().
+		Msg(fmt.Sprintf("Adding branch %s to config.Branches", currentBranch))
+
 	return append(branches, Branch{currentBranch, "", false}), nil
 }
 
@@ -40,11 +54,22 @@ func RemoveGitProvider(ctx context.Context, dir *dagger.Directory, plugins []int
 		pluginType := reflect.TypeOf(plugin)
 		switch pluginType.Kind() {
 		case reflect.String:
-			log.Debug().Str("string", fmt.Sprintf("%s", plugin)).Msg("Plugins")
+			log.
+				Debug().
+				Str("string", fmt.Sprintf("%s", plugin)).
+				Msg("Plugins")
+
 		case reflect.Array:
-			log.Debug().Str("array", fmt.Sprintf("%s", plugin)).Msg("Plugins")
+			log.
+				Debug().
+				Str("array", fmt.Sprintf("%s", plugin)).
+				Msg("Plugins")
+
 		default:
-			log.Debug().Str("other", fmt.Sprintf("%s", plugin)).Msg("Plugins")
+			log.
+				Debug().
+				Str("other", fmt.Sprintf("%s", plugin)).
+				Msg("Plugins")
 		}
 	}
 
