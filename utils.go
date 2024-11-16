@@ -96,6 +96,9 @@ func SemanticReleaseCommand(ctx context.Context, dryRun, checkIfCi bool) []strin
 		cmd = append(cmd, "--no-ci")
 	}
 
-	log.Debug().Msg(fmt.Sprintf("Returning 'semantic-release' command: '%s'", strings.Join(cmd, " ")))
+	log.
+		Debug().
+		Msg(fmt.Sprintf("Returning 'semantic-release' command: '%s'", strings.Join(cmd, " ")))
+
 	return cmd
 }
