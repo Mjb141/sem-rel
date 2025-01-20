@@ -123,7 +123,7 @@ func (m *SemRel) Release(
 			Bool("addCurrentBranch", m.AddCurrentBranch).
 			Msg("Attempting to add %s to config.Branches")
 
-		branches, err := AddBranchToReleaseRc(ctx, dir, config.Branches)
+		branches, err := m.AddBranchToReleaseRc(ctx, dir, config.Branches)
 		if err != nil {
 			log.
 				Error().
@@ -142,11 +142,11 @@ func (m *SemRel) Release(
 			Bool("removeGitProvider", m.RemoveGitProvider).
 			Msg("Attempting to remove @semantic-release/github or @semantic-release/gitlab from plugins")
 
-		config.Plugins = RemoveGitProvider(ctx, dir, config.Plugins)
+		config.Plugins = m.RemoveGitPlugin(ctx, dir, config.Plugins)
 	}
 
 	// Modify command if required
-	semanticReleaseCommand := SemanticReleaseCommand(ctx, m.DryRun, m.CheckIfCi)
+	semanticReleaseCommand := m.SemanticReleaseCommand(ctx, m.DryRun, m.CheckIfCi)
 
 	updatedConfig, err := json.Marshal(config)
 	if err != nil {

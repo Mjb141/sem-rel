@@ -11,7 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func AddBranchToReleaseRc(ctx context.Context, dir *dagger.Directory, branches []Branch) ([]Branch, error) {
+func (m *SemRel) AddBranchToReleaseRc(ctx context.Context, dir *dagger.Directory, branches []Branch) ([]Branch, error) {
 	currentBranch, err := dag.GitInfo(dir).Branch(ctx)
 	if err != nil {
 		log.
@@ -49,7 +49,7 @@ func AddBranchToReleaseRc(ctx context.Context, dir *dagger.Directory, branches [
 	return append(branches, Branch{currentBranch, "", false}), nil
 }
 
-func RemoveGitProvider(ctx context.Context, dir *dagger.Directory, plugins []interface{}) []interface{} {
+func (m *SemRel) RemoveGitPlugin(ctx context.Context, dir *dagger.Directory, plugins []interface{}) []interface{} {
 	for pluginIndex, plugin := range plugins {
 		pluginType := reflect.TypeOf(plugin)
 		switch pluginType.Kind() {
@@ -91,7 +91,7 @@ func RemoveGitProvider(ctx context.Context, dir *dagger.Directory, plugins []int
 	return plugins
 }
 
-func SemanticReleaseCommand(ctx context.Context, dryRun, checkIfCi bool) []string {
+func (m *SemRel) SemanticReleaseCommand(ctx context.Context, dryRun, checkIfCi bool) []string {
 	cmd := []string{"semantic-release"}
 
 	if dryRun {
