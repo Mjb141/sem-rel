@@ -33,22 +33,62 @@ type SemRel struct {
 	CheckIfCi bool
 }
 
-type Branch struct {
-	Name       string `json:"name"`
-	Channel    string `json:"channel,omitempty"`
-	Prerelease bool   `json:"prerelease,omitempty"`
+// Config represents the overall JSON structure
+type Config struct {
+	Branches []Branch        `json:"branches"`
+	Plugins  []PluginElement `json:"plugins"`
+}
+
+// PluginOptions defines the interface for plugin configuration options
+type PluginOptions interface {
+	DaggerObject
 }
 
 // Plugin represents a plugin in the JSON data
 type Plugin struct {
-	Options map[string]string `json:"options,omitempty"`
-	Name    string            `json:"name"`
+	Options PluginOptions `json:"options,omitempty"`
+	Name    string        `json:"name"`
 }
 
-// Config represents the overall JSON structure
-type Config struct {
-	Branches []Branch      `json:"branches"`
-	Plugins  []interface{} `json:"plugins"`
+// ReleaseConfig represents the root structure of .releaserc.json
+type ReleaseConfig struct {
+	Branches []Branch        `json:"branches"`
+	Plugins  []PluginElement `json:"plugins"`
+}
+
+// Branch represents a branch configuration
+type Branch struct {
+	Name       string `json:"name"`
+	Prerelease bool   `json:"prerelease,omitempty"`
+	Channel    string `json:"channel,omitempty"`
+}
+
+// PluginElement represents a single plugin entry which can be either a string or a plugin configuration
+type PluginElement []interface {
+	DaggerObject
+}
+
+// Helper methods for PluginElement
+func (p PluginElement) GetPluginName() string {
+	if len(p) == 0 {
+		return ""
+	}
+	// The first element is always the plugin name as a string
+	if name, ok := p[0].(string); ok {
+		return name
+	}
+	return ""
+}
+
+func (p PluginElement) GetConfig() map[string]interface{} {
+	if len(p) < 2 {
+		return nil
+	}
+	// The second element is the configuration object
+	if config, ok := p[1].(map[string]interface{}); ok {
+		return config
+	}
+	return nil
 }
 
 // Configure Semantic Release

@@ -1,0 +1,13 @@
+{
+  "name": "tests",
+  "engineVersion": "v0.15.2",
+  "sdk": "go",
+  "dependencies": [
+    {
+      "name": "sem-rel",
+      "source": "github.com/mjb141/sem-rel@b3583bda583de37c780a511fb0c59594665fc3a6",
+      "pin": "b3583bda583de37c780a511fb0c59594665fc3a6"
+    }
+  ],
+  "source": "."
+}

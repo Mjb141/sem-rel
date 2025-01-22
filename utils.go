@@ -49,7 +49,7 @@ func (m *SemRel) AddBranchToReleaseRc(ctx context.Context, dir *dagger.Directory
 	return append(branches, Branch{currentBranch, "", false}), nil
 }
 
-func (m *SemRel) RemoveGitPlugin(ctx context.Context, dir *dagger.Directory, plugins []interface{}) []interface{} {
+func (m *SemRel) RemoveGitPlugin(ctx context.Context, dir *dagger.Directory, plugins []Plugin) []Plugin {
 	for pluginIndex, plugin := range plugins {
 		pluginType := reflect.TypeOf(plugin)
 		switch pluginType.Kind() {
@@ -74,7 +74,7 @@ func (m *SemRel) RemoveGitPlugin(ctx context.Context, dir *dagger.Directory, plu
 				return plugins
 			}
 
-		case reflect.Array:
+		case reflect.Array, reflect.Slice:
 			log.
 				Debug().
 				Str("array", fmt.Sprintf("%s", plugin)).
