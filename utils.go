@@ -4,7 +4,6 @@ import (
 	"context"
 	"dagger/sem-rel/internal/dagger"
 	"fmt"
-	"reflect"
 	"slices"
 	"strings"
 
@@ -46,50 +45,50 @@ func (m *SemRel) AddBranchToReleaseRc(ctx context.Context, dir *dagger.Directory
 		Info().
 		Msg(fmt.Sprintf("Adding branch %s to config.Branches", currentBranch))
 
-	return append(branches, Branch{currentBranch, "", false}), nil
+	return append(branches, Branch{currentBranch, false, ""}), nil
 }
 
-func (m *SemRel) RemoveGitPlugin(ctx context.Context, dir *dagger.Directory, plugins []Plugin) []Plugin {
-	for pluginIndex, plugin := range plugins {
-		pluginType := reflect.TypeOf(plugin)
-		switch pluginType.Kind() {
-		case reflect.String:
-			log.
-				Debug().
-				Str("string", fmt.Sprintf("%s", plugin)).
-				Msg("Plugins")
-
-			if plugin.(string) == "@semantic-release/github" || plugin.(string) == "@semantic-release/gitlab" {
-				log.
-					Debug().
-					Msg(fmt.Sprintf("Removing pluginIndex %d (%s) from plugins", pluginIndex, plugin))
-
-				plugins = slices.Delete(plugins, pluginIndex, pluginIndex+1)
-
-				log.
-					Debug().
-					Str("array", fmt.Sprintf("%s", plugins)).
-					Msg("Plugins")
-
-				return plugins
-			}
-
-		case reflect.Array, reflect.Slice:
-			log.
-				Debug().
-				Str("array", fmt.Sprintf("%s", plugin)).
-				Msg("Plugins")
-
-		default:
-			log.
-				Debug().
-				Str("other", fmt.Sprintf("%s", plugin)).
-				Msg("Plugins")
-		}
-	}
-
-	return plugins
-}
+// func (m *SemRel) RemoveGitPlugin(ctx context.Context, dir *dagger.Directory, plugins []PluginElement) []PluginElement {
+// 	for pluginIndex, plugin := range plugins {
+// 		pluginType := reflect.TypeOf(plugin)
+// 		switch pluginType.Kind() {
+// 		case reflect.String:
+// 			log.
+// 				Debug().
+// 				Str("string", fmt.Sprintf("%s", plugin)).
+// 				Msg("Plugins")
+//
+// 			if plugin.(string) == "@semantic-release/github" || plugin.(string) == "@semantic-release/gitlab" {
+// 				log.
+// 					Debug().
+// 					Msg(fmt.Sprintf("Removing pluginIndex %d (%s) from plugins", pluginIndex, plugin))
+//
+// 				plugins = slices.Delete(plugins, pluginIndex, pluginIndex+1)
+//
+// 				log.
+// 					Debug().
+// 					Str("array", fmt.Sprintf("%s", plugins)).
+// 					Msg("Plugins")
+//
+// 				return plugins
+// 			}
+//
+// 		case reflect.Array, reflect.Slice:
+// 			log.
+// 				Debug().
+// 				Str("array", fmt.Sprintf("%s", plugin)).
+// 				Msg("Plugins")
+//
+// 		default:
+// 			log.
+// 				Debug().
+// 				Str("other", fmt.Sprintf("%s", plugin)).
+// 				Msg("Plugins")
+// 		}
+// 	}
+//
+// 	return plugins
+// }
 
 func (m *SemRel) SemanticReleaseCommand(ctx context.Context, dryRun, checkIfCi bool) []string {
 	cmd := []string{"semantic-release"}

@@ -18,6 +18,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const (
+	SemRelImage = "hoppr/semantic-release@sha256:64cb33458281ab15a9249747c74d498b54d2ea125047c4fd1f24b3f04b28bf00"
+)
+
 type SemRel struct {
 	// Allow the user to add the current branch to .releaserc.json
 	// +private
@@ -33,25 +37,13 @@ type SemRel struct {
 	CheckIfCi bool
 }
 
-// Config represents the overall JSON structure
-type Config struct {
-	Branches []Branch        `json:"branches"`
-	Plugins  []PluginElement `json:"plugins"`
-}
-
 // PluginOptions defines the interface for plugin configuration options
 type PluginOptions interface {
 	DaggerObject
 }
 
-// Plugin represents a plugin in the JSON data
-type Plugin struct {
-	Options PluginOptions `json:"options,omitempty"`
-	Name    string        `json:"name"`
-}
-
-// ReleaseConfig represents the root structure of .releaserc.json
-type ReleaseConfig struct {
+// Config represents the overall JSON structure
+type Config struct {
 	Branches []Branch        `json:"branches"`
 	Plugins  []PluginElement `json:"plugins"`
 }
@@ -63,31 +55,36 @@ type Branch struct {
 	Channel    string `json:"channel,omitempty"`
 }
 
-// PluginElement represents a single plugin entry which can be either a string or a plugin configuration
-type PluginElement []interface {
-	DaggerObject
+// Plugin represents a plugin in the JSON data
+type PluginElement struct {
+	Name    string
+	Options map[string]interface{}
 }
 
-// Helper methods for PluginElement
-func (p PluginElement) GetPluginName() string {
-	if len(p) == 0 {
-		return ""
-	}
-	// The first element is always the plugin name as a string
-	if name, ok := p[0].(string); ok {
-		return name
-	}
-	return ""
-}
-
-func (p PluginElement) GetConfig() map[string]interface{} {
-	if len(p) < 2 {
+func (p *PluginElement) UnmarshalJSON(data []byte) error {
+	var nameOnly string
+	if err := json.Unmarshal(data, &nameOnly); err == nil {
+		p.Name = nameOnly
 		return nil
 	}
-	// The second element is the configuration object
-	if config, ok := p[1].(map[string]interface{}); ok {
-		return config
+
+	var nameWithOptions []interface{}
+	if err := json.Unmarshal(data, &nameWithOptions); err != nil {
+		return err
 	}
+
+	if len(nameWithOptions) > 0 {
+		if name, ok := nameWithOptions[0].(string); ok {
+			p.Name = name
+		}
+	}
+
+	if len(nameWithOptions) > 1 {
+		if options, ok := nameWithOptions[1].(map[string]interface{}); ok {
+			p.Options = options
+		}
+	}
+
 	return nil
 }
 
@@ -182,7 +179,7 @@ func (m *SemRel) Release(
 			Bool("removeGitProvider", m.RemoveGitProvider).
 			Msg("Attempting to remove @semantic-release/github or @semantic-release/gitlab from plugins")
 
-		config.Plugins = m.RemoveGitPlugin(ctx, dir, config.Plugins)
+		// config.Plugins = m.RemoveGitPlugin(ctx, dir, config.Plugins)
 	}
 
 	// Modify command if required
@@ -200,7 +197,7 @@ func (m *SemRel) Release(
 
 	currentTime := time.Now().Format("11:00:00")
 	ctr := dag.Container().
-		From("hoppr/semantic-release").
+		From(SemRelImage).
 		WithEnvVariable("BUST_CACHE", currentTime).
 		WithEnvVariable("SEMREL_COMMAND", strings.Join(semanticReleaseCommand, " ")).
 		WithSecretVariable(tokenKey, token).
