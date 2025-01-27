@@ -31,3 +31,4 @@ This prevents any accidental releases.
 `dagger call configure --add-current-branch release --token env:GH_TOKEN file --path ".releaserc.json" export --path ".releaserc.json.modified"`
 
 `cat .releaserc.json.modified | jq`
+
