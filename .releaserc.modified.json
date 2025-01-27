@@ -1,0 +1,34 @@
+{
+  "branches": [
+    {
+      "name": "main",
+      "prerelease": false,
+      "channel": ""
+    },
+    {
+      "name": "PLT-[0-9]{3,4}",
+      "prerelease": true,
+      "channel": "unstable"
+    }
+  ],
+  "plugins": [
+    {
+      "Name": "@semantic-release/commit-analyzer",
+      "Options": null
+    },
+    {
+      "Name": "@semantic-release/release-notes-generator",
+      "Options": null
+    },
+    {
+      "Name": "@semantic-release/github",
+      "Options": null
+    },
+    {
+      "Name": "@semantic-release/git",
+      "Options": {
+        "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
+      }
+    }
+  ]
+}
