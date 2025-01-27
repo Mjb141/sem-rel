@@ -34,7 +34,7 @@ type SemRel struct {
 	DryRun bool
 	// Semantic Release --no-ci option
 	// +private
-	CheckIfCi bool
+	AllowLocal bool
 }
 
 // PluginOptions defines the interface for plugin configuration options
@@ -102,12 +102,12 @@ func (m *SemRel) Configure(
 	dryRun bool,
 	// The Semantic Release --check-if-ci flag for local execution
 	// +default=false
-	checkIfCi bool,
+	allowLocal bool,
 ) *SemRel {
 	m.AddCurrentBranch = addCurrentBranch
 	m.RemoveGitProvider = removeGitProvider
 	m.DryRun = dryRun
-	m.CheckIfCi = checkIfCi
+	m.AllowLocal = allowLocal
 	return m
 }
 
@@ -183,7 +183,7 @@ func (m *SemRel) Release(
 	}
 
 	// Modify command if required
-	semanticReleaseCommand := m.SemanticReleaseCommand(ctx, m.DryRun, m.CheckIfCi)
+	semanticReleaseCommand := m.SemanticReleaseCommand(ctx, m.DryRun, m.AllowLocal)
 
 	updatedConfig, err := json.Marshal(config)
 	if err != nil {

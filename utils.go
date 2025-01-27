@@ -90,7 +90,7 @@ func (m *SemRel) AddBranchToReleaseRc(ctx context.Context, dir *dagger.Directory
 // 	return plugins
 // }
 
-func (m *SemRel) SemanticReleaseCommand(ctx context.Context, dryRun, checkIfCi bool) []string {
+func (m *SemRel) SemanticReleaseCommand(ctx context.Context, dryRun, allowLocal bool) []string {
 	cmd := []string{"semantic-release"}
 
 	if dryRun {
@@ -102,7 +102,7 @@ func (m *SemRel) SemanticReleaseCommand(ctx context.Context, dryRun, checkIfCi b
 		cmd = append(cmd, "--dry-run")
 	}
 
-	if !checkIfCi {
+	if allowLocal {
 		log.
 			Debug().
 			Str("option", "--no-ci").

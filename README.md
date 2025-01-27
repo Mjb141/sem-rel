@@ -1,8 +1,20 @@
 ## Testing
 
-### Run Semantic Release with defaults:
+Defaults:
+- Local execution is prevented
+- Dry run is set
 
-`dagger call release --token env:GH_TOKEN stdout`
+This prevents any accidental releases.
+
+### Dry run a Semantic Release locally:
+
+`dagger call configure --allow-local release --token env:GH_TOKEN stdout`
+
+### Run a Semantic Release locally:
+
+:warning: This will trigger a release from your local machine :warning:
+
+`dagger call configure --allow-local --dry-run=false release --token env:GH_TOKEN stdout`
 
 ### Run Semantic Release on a non-configured branch:
 
